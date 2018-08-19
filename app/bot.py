@@ -1,11 +1,7 @@
-from telegram.ext import Updater, CommandHandler
+from telegram import ext
 
 import app.settings
-
-
-def hello(bot, update):
-    update.message.reply_text(
-        'Hello {}'.format(update.message.from_user.first_name))
+import app.entry_points
 
 
 def run():
@@ -15,9 +11,10 @@ def run():
 
     request_kwargs = {'connect_timeout': 60, 'read_timeout': 60}
     request_kwargs.update(bot_proxy_kwargs)
-    updater = Updater(app.settings.TOKEN, request_kwargs=request_kwargs)
+    updater = ext.Updater(app.settings.TOKEN, request_kwargs=request_kwargs)
 
-    updater.dispatcher.add_handler(CommandHandler('hello', hello))
+    for handler in app.entry_points.handlers:
+        updater.dispatcher.add_handler(handler)
 
     updater.start_polling()
     updater.idle()
