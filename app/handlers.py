@@ -46,14 +46,6 @@ class Start(Menu):
         return f'Привет, {self.user.username}!\nДавай сразу приступим.'
 
 
-class RunLastTimer(NotImplemented):
-    pass
-
-
-class Timers(NotImplemented):
-    pass
-
-
 class WrongInput(app.interfaces.RegexHandler):
     reply_text = 'Я ничего не понимаю.'
 
