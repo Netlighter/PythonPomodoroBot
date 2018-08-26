@@ -1,6 +1,6 @@
 import mongoengine.errors
 
-from schemas.users import User
+from users.schemas import User
 import app.interfaces
 
 
