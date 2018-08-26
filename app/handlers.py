@@ -4,32 +4,34 @@ from users.schemas import User
 import app.interfaces
 
 
-class NotImplemented(app.interfaces.RegexHandler):
-    reply_text = 'Ого! Кажется эта функция еще в разработке!'
+class SendChooseActionMsg(app.interfaces.RegexHandler):
+    reply_text = 'Выберите действие:'
 
     def callback(self, bot, update):
         pass
+
+
+class SendReturnToMainMenuBtn(SendChooseActionMsg):
+    RETURN_TO_MENU_BTN = 'Вернуться в меню'
 
     def get_markup_keyboard(self):
         return [
-            [Menu.RETURN_TO_MENU_BTN],
+            [self.RETURN_TO_MENU_BTN],
         ]
 
 
-class Menu(app.interfaces.RegexHandler):
+class NotImplemented(SendReturnToMainMenuBtn):
+    reply_text = 'Ого! Кажется эта функция еще в разработке!'
+
+
+class Menu(SendChooseActionMsg):
     TIMERS_BTN = 'Таймеры'
-    START_LAST_TIMER_BTN = 'Запустить последний таймер'
-    RETURN_TO_MENU_BTN = 'Вернуться в меню'
-
-    reply_text = 'Выберите действие'
-
-    def callback(self, bot, update):
-        pass
+    RUN_LAST_TIMER_BTN = 'Запустить последний таймер'
 
     def get_markup_keyboard(self):
         return [
             [self.TIMERS_BTN],
-            [self.START_LAST_TIMER_BTN],
+            [self.RUN_LAST_TIMER_BTN],
         ]
 
 
