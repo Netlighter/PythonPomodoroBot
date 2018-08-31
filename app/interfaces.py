@@ -17,12 +17,16 @@ class RegexHandler(ext.RegexHandler):
     # Message text which send to user.
     reply_text = ''
 
-    def __init__(self, pattern, *args, **kwargs):
+    # The handler which must be executed after current handler execution end.
+    chained_handler = None
+
+    def __init__(self, pattern='', *args, **kwargs):
         super().__init__(pattern, callback=self.callback, *args, **kwargs)
 
     def extend_self(self, update, dispatcher):
         """Extend self with usefull shortcuts."""
         self.update = update
+        self.dispatcher = dispatcher
         self.bot = dispatcher.bot
         self.message = update.effective_message
         self.user = update.effective_message.from_user
@@ -33,7 +37,30 @@ class RegexHandler(ext.RegexHandler):
 
         state = super().handle_update(update, dispatcher)
         self.reply_message()
+        chained_handler_state = self.run_chained_handler()
+
+        # TODO: Add a HUGE warning.
+        # Prefer chained_handler_state.
+        # Do not use None as "KEEP_CURRENT_STATE" logic implementation, instead
+        # create own constants for this behaviour.
+        state = chained_handler_state or state
+
         return state
+
+    def run_chained_handler(self):
+        """
+        Run chained handler handle_update with current update and dispatcher
+        credentials.
+        """
+        handler = self.get_chained_handler()
+        if handler is not None:
+            return handler.handle_update(self.update, self.dispatcher)
+        else:
+            return None
+
+    def get_chained_handler(self):
+        """Return handler object"""
+        return self.chained_handler
 
     def callback(self, bot, update):
         """
@@ -44,6 +71,8 @@ class RegexHandler(ext.RegexHandler):
         """
         raise NotImplementedError
 
+    # Reply message text etc.
+
     def reply_message(self):
         """Reply message."""
         self.message.reply_text(
@@ -51,11 +80,13 @@ class RegexHandler(ext.RegexHandler):
             reply_markup=self.get_markup_object())
 
     def get_reply_text(self):
-        """Get reply message text."""
+        """Return reply message text."""
         if self.reply_text == '':
             raise NotImplementedError
 
         return self.reply_text
+
+    # Markups
 
     def get_markup_kwargs(self):
         """Get markup keyword arguments."""
@@ -90,3 +121,5 @@ class RegexHandler(ext.RegexHandler):
             return self.get_markup()
         else:
             raise ValueError(f'Wrong markup type defined for {self}')
+
+    #
