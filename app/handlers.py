@@ -2,9 +2,12 @@ import mongoengine.errors
 
 from users.schemas import User
 import app.interfaces
+import app.mixins
 
 
-class SendChooseActionMsg(app.interfaces.RegexHandler):
+class SendChooseActionMsg(
+    app.mixins.UpdateUserStateMixin, app.interfaces.RegexHandler,
+):
     reply_text = 'Выберите действие:'
 
     def callback(self, bot, update):
