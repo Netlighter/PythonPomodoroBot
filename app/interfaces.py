@@ -1,17 +1,22 @@
+import enum
+
 from telegram import (
     ext, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton)
 
 
 class RegexHandler(ext.RegexHandler):
     """Class-based handler for regular expressions."""
-    class MarkupType:
-        INLINE = 'INLINE'
-        REGULAR = 'REGULAR'
+    class MarkupType(enum.Enum):
+        INLINE = enum.auto()
+        REGULAR = enum.auto()
 
     # List of lists of strings (or of dictionaries if markup_type is INLINE)
-    # which represents menu matrix.
+    # which represents menu keyboard.
     markup_keyboard = None
+    # Determines whether keyboard should be represented as regular menu or as
+    # inline.
     markup_type = MarkupType.REGULAR
+    # Kwargs to pass into default markup constructor.
     markup_kwargs = {'resize_keyboard': True}
 
     # Message text which send to user.
@@ -23,29 +28,25 @@ class RegexHandler(ext.RegexHandler):
     def __init__(self, pattern='', *args, **kwargs):
         super().__init__(pattern, callback=self.callback, *args, **kwargs)
 
-    def extend_self(self, update, dispatcher):
-        """Extend self with usefull shortcuts."""
-        self.update = update
-        self.dispatcher = dispatcher
-        self.bot = dispatcher.bot
-        self.message = update.effective_message
-        self.user = update.effective_message.from_user
+    # Parent methods and extensions
 
     def handle_update(self, update, dispatcher):
-        """Extend self, handle update, reply message."""
+        """Extend self, handle update, run post callback processing."""
         self.extend_self(update, dispatcher)
 
         state = super().handle_update(update, dispatcher)
         self.reply_message()
         chained_handler_state = self.run_chained_handler()
 
-        # TODO: Add a HUGE warning.
+        # TODO: Add a HUGE warning in future documentation.
         # Prefer chained_handler_state.
         # Do not use None as "KEEP_CURRENT_STATE" logic implementation, instead
         # create own constants for this behaviour.
         state = chained_handler_state or state
 
         return state
+
+    # Chained handler
 
     def run_chained_handler(self):
         """
