@@ -35,6 +35,39 @@ class RegexHandler(ext.RegexHandler):
         self.extend_self(update, dispatcher)
 
         state = super().handle_update(update, dispatcher)
+        updated_state = self.post_callback_procession(state)
+
+        return updated_state
+
+    def check_update(self, update):
+        """Extend self, check update."""
+        self.extend_self_by_update(update)
+        return super().check_update(update)
+
+    def extend_self_by_update(self, update):
+        """Extend self with shortcuts for update object."""
+        self.update = update
+        self.message = update.effective_message
+        self.user = update.effective_message.from_user
+
+    def extend_self(self, update, dispatcher):
+        """Extend self with shortcuts for dispatcher object."""
+        self.extend_self_by_update(update)
+
+        self.bot = dispatcher.bot
+        self.dispatcher = dispatcher
+
+    def callback(self, bot, update, **optional_args):
+        """
+        Force main handler logic. Return state.
+
+        'bot' and 'update' arguments are decalred for back compatibility with
+        ext.RegularHandler.
+        """
+        raise NotImplementedError
+
+    def post_callback_procession(self, state):
+        """Make post callback call procession, return updated state."""
         self.reply_message()
         chained_handler_state = self.run_chained_handler()
 
@@ -62,15 +95,6 @@ class RegexHandler(ext.RegexHandler):
     def get_chained_handler(self):
         """Return handler object"""
         return self.chained_handler
-
-    def callback(self, bot, update):
-        """
-        Force main handler logic. Return state.
-
-        'bot' and 'update' arguments are decalred for back compatibility with
-        ext.RegularHandler.
-        """
-        raise NotImplementedError
 
     # Reply message text etc.
 
